@@ -13,9 +13,8 @@ jobs:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_USER: moodle
-          POSTGRES_PASSWORD: moodle_password
-          # تم إزالة POSTGRES_DB لتسمح لـ moodle-plugin-ci بإنشائها
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
         ports:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
@@ -23,12 +22,9 @@ jobs:
       mariadb:
         image: mariadb:11.4
         env:
-          MYSQL_USER: moodle
-          MYSQL_PASSWORD: moodle_password
           MYSQL_ROOT_PASSWORD: root_password
           MYSQL_CHARACTER_SET_SERVER: utf8mb4
           MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
-          # تم إزالة MYSQL_DATABASE لتسمح لـ moodle-plugin-ci بإنشائها
         ports:
           - 3306:3306
         options: --health-cmd="mariadb-admin ping -u root -proot_password" --health-interval 10s --health-timeout 5s --health-retries 5
@@ -69,8 +65,16 @@ jobs:
           sudo locale-gen en_AU.UTF-8
           echo "NVM_DIR=$HOME/.nvm" >> $GITHUB_ENV
 
-      - name: Install moodle-plugin-ci
-        run: moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1 --db-user=moodle --db-pass=moodle_password --db-name=moodle_db
+      - name: Install moodle-plugin-ci (MariaDB)
+        if: matrix.database == 'mariadb'
+        run: moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1 --db-user=root --db-pass=root_password
+        env:
+          DB: ${{ matrix.database }}
+          MOODLE_BRANCH: ${{ matrix.moodle-branch }}
+
+      - name: Install moodle-plugin-ci (PostgreSQL)
+        if: matrix.database == 'pgsql'
+        run: moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1 --db-user=postgres
         env:
           DB: ${{ matrix.database }}
           MOODLE_BRANCH: ${{ matrix.moodle-branch }}
