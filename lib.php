@@ -1,6 +1,17 @@
 <?php
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Library functions for local_reactlive.
+ *
+ * @package    local_reactlive
+ * @copyright  2026 Abdelrhman
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
+/**
+ * Extend navigation.
+ *
+ * @param global_navigation $navigation The navigation object.
+ */
 function local_reactlive_extend_navigation(global_navigation $navigation) {
     global $USER, $SESSION, $PAGE;
 

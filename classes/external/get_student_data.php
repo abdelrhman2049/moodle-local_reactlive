@@ -1,7 +1,13 @@
 <?php
-namespace local_reactlive\external;
+/**
+ * Get student data external API.
+ *
+ * @package    local_reactlive
+ * @copyright  2026 Abdelrhman
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
-defined('MOODLE_INTERNAL') || die();
+namespace local_reactlive\external;
 
 use core_external\external_api;
 use core_external\external_function_parameters;
@@ -11,17 +17,37 @@ use core_external\external_value;
 use core_course_list_element;
 use moodle_url;
 
+/**
+ * Get student data external API class.
+ *
+ * @package    local_reactlive
+ * @copyright  2026 Abdelrhman
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class get_student_data extends external_api {
 
+    /** @var int Suggested limit. */
     private const SUGGESTED_LIMIT = 6;
+
+    /** @var int Suggested reward. */
     private const SUGGESTED_REWARD = 150;
 
+    /**
+     * Execute parameters.
+     *
+     * @return external_function_parameters
+     */
     public static function execute_parameters() {
         return new external_function_parameters([
             'userid' => new external_value(PARAM_INT, 'User ID', VALUE_DEFAULT, 0)
         ]);
     }
 
+    /**
+     * Activity structure.
+     *
+     * @return external_single_structure
+     */
     private static function activity_structure() {
         return new external_single_structure([
             'id' => new external_value(PARAM_INT, 'Course module id'),
@@ -32,6 +58,11 @@ class get_student_data extends external_api {
         ]);
     }
 
+    /**
+     * Execute returns.
+     *
+     * @return external_single_structure
+     */
     public static function execute_returns() {
         return new external_single_structure([
             'user' => new external_single_structure([
@@ -72,6 +103,12 @@ class get_student_data extends external_api {
         ]);
     }
 
+    /**
+     * Get course image.
+     *
+     * @param \stdClass $course Course object.
+     * @return string
+     */
     private static function get_course_image($course) {
         $courseinlist = new core_course_list_element($course);
         foreach ($courseinlist->get_course_overviewfiles() as $file) {
@@ -89,6 +126,12 @@ class get_student_data extends external_api {
         return '';
     }
 
+    /**
+     * Get summary.
+     *
+     * @param \stdClass $course Course object.
+     * @return string
+     */
     private static function get_summary($course) {
         $context = \context_course::instance($course->id);
         $html = format_text($course->summary, $course->summaryformat, ['context' => $context]);
@@ -96,6 +139,12 @@ class get_student_data extends external_api {
         return $text !== '' ? $text : 'Join this course and start learning today.';
     }
 
+    /**
+     * Get suggested courses.
+     *
+     * @param array $enrolledcourses Array of enrolled courses.
+     * @return array
+     */
     private static function get_suggested_courses(array $enrolledcourses) {
         global $DB;
 
@@ -136,6 +185,12 @@ class get_student_data extends external_api {
         return $suggested;
     }
 
+    /**
+     * Execute function.
+     *
+     * @param int $userid User ID.
+     * @return array
+     */
     public static function execute($userid = 0) {
         global $USER, $DB, $CFG;
 
@@ -152,7 +207,6 @@ class get_student_data extends external_api {
 
         self::validate_context(\context_system::instance());
 
-        // شرط الحماية يجب أن يكون هنا قبل البدء في جلب أي بيانات
         if ($USER->id != $userid) {
             throw new \moodle_exception('accessdenied', 'admin');
         }
